@@ -30,6 +30,7 @@ import (
 	"github.com/openshift/oc/pkg/cli/admin/top"
 	"github.com/openshift/oc/pkg/cli/admin/upgrade"
 	"github.com/openshift/oc/pkg/cli/admin/verifyimagesignature"
+	"github.com/openshift/oc/pkg/cli/clusteroperator"
 	"github.com/openshift/oc/pkg/cli/kubectlwrappers"
 	"github.com/openshift/oc/pkg/cli/options"
 	cmdutil "github.com/openshift/oc/pkg/helpers/cmd"
@@ -65,6 +66,7 @@ func NewCommandAdmin(f kcmdutil.Factory, streams genericclioptions.IOStreams) *c
 				mustgather.NewMustGatherCommand(f, streams),
 				inspect.NewCmdInspect(streams),
 				ocpcertificates.NewCommandOCPCertificates(f, streams),
+				clusteroperator.NewCommandClusterOperators(f, streams),
 			},
 		},
 		{
