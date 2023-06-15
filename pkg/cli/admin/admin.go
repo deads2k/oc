@@ -6,6 +6,7 @@ import (
 	"github.com/openshift/oc/pkg/cli/admin/buildchain"
 	"github.com/openshift/oc/pkg/cli/admin/catalog"
 	"github.com/openshift/oc/pkg/cli/admin/cert"
+	"github.com/openshift/oc/pkg/cli/admin/copytonode"
 	"github.com/openshift/oc/pkg/cli/admin/createbootstrapprojecttemplate"
 	"github.com/openshift/oc/pkg/cli/admin/createerrortemplate"
 	"github.com/openshift/oc/pkg/cli/admin/createkubeconfig"
@@ -27,10 +28,11 @@ import (
 	"github.com/openshift/oc/pkg/cli/admin/project"
 	"github.com/openshift/oc/pkg/cli/admin/prune"
 	"github.com/openshift/oc/pkg/cli/admin/release"
+	"github.com/openshift/oc/pkg/cli/admin/restartkubelet"
 	"github.com/openshift/oc/pkg/cli/admin/top"
 	"github.com/openshift/oc/pkg/cli/admin/upgrade"
 	"github.com/openshift/oc/pkg/cli/admin/verifyimagesignature"
-	"github.com/openshift/oc/pkg/cli/clusteroperator"
+	"github.com/openshift/oc/pkg/cli/admin/waitforstable"
 	"github.com/openshift/oc/pkg/cli/kubectlwrappers"
 	"github.com/openshift/oc/pkg/cli/options"
 	cmdutil "github.com/openshift/oc/pkg/helpers/cmd"
@@ -66,7 +68,7 @@ func NewCommandAdmin(f kcmdutil.Factory, streams genericclioptions.IOStreams) *c
 				mustgather.NewMustGatherCommand(f, streams),
 				inspect.NewCmdInspect(streams),
 				ocpcertificates.NewCommandOCPCertificates(f, streams),
-				clusteroperator.NewCommandClusterOperators(f, streams),
+				waitforstable.NewCmdWaitForStableClusterOperators(f, streams),
 			},
 		},
 		{
@@ -77,6 +79,8 @@ func NewCommandAdmin(f kcmdutil.Factory, streams genericclioptions.IOStreams) *c
 				cmdutil.ReplaceCommandName("kubectl", "oc adm", ktemplates.Normalize(drain.NewCmdUncordon(f, streams))),
 				cmdutil.ReplaceCommandName("kubectl", "oc adm", ktemplates.Normalize(taint.NewCmdTaint(f, streams))),
 				node.NewCmdLogs(f, streams),
+				restartkubelet.NewCmdRestartKubelet(f, streams),
+				copytonode.NewCmdCopyToNode(f, streams),
 			},
 		},
 		{
