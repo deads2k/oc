@@ -6,6 +6,7 @@ require (
 	github.com/AaronO/go-git-http v0.0.0-20161214145340-1d9485b3a98f
 	github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd
 	github.com/RangelReale/osincli v0.0.0-20160924135400-fababb0555f2
+	github.com/alessio/shellescape v1.4.1
 	github.com/alexbrainman/sspi v0.0.0-20180613141037-e580b900e9f5
 	github.com/alicebob/sqlittle v1.4.0
 	github.com/apcera/gssapi v0.0.0-00010101000000-000000000000
@@ -40,6 +41,7 @@ require (
 	github.com/russross/blackfriday v1.5.2
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
+	github.com/vincent-petithory/dataurl v1.0.0
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 	golang.org/x/net v0.0.0-20211209124913-491a49abca63
