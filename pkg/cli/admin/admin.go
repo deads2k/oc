@@ -3,10 +3,6 @@ package admin
 import (
 	"fmt"
 
-	"github.com/openshift/oc/pkg/cli/admin/waitfornoderestart"
-
-	"github.com/openshift/oc/pkg/cli/admin/rebootmachineconfigpool"
-
 	"github.com/openshift/oc/pkg/cli/admin/buildchain"
 	"github.com/openshift/oc/pkg/cli/admin/catalog"
 	"github.com/openshift/oc/pkg/cli/admin/cert"
@@ -31,11 +27,13 @@ import (
 	"github.com/openshift/oc/pkg/cli/admin/policy"
 	"github.com/openshift/oc/pkg/cli/admin/project"
 	"github.com/openshift/oc/pkg/cli/admin/prune"
+	"github.com/openshift/oc/pkg/cli/admin/rebootmachineconfigpool"
 	"github.com/openshift/oc/pkg/cli/admin/release"
 	"github.com/openshift/oc/pkg/cli/admin/restartkubelet"
 	"github.com/openshift/oc/pkg/cli/admin/top"
 	"github.com/openshift/oc/pkg/cli/admin/upgrade"
 	"github.com/openshift/oc/pkg/cli/admin/verifyimagesignature"
+	"github.com/openshift/oc/pkg/cli/admin/waitfornodereboot"
 	"github.com/openshift/oc/pkg/cli/admin/waitforstable"
 	"github.com/openshift/oc/pkg/cli/kubectlwrappers"
 	"github.com/openshift/oc/pkg/cli/options"
@@ -86,7 +84,7 @@ func NewCommandAdmin(f kcmdutil.Factory, streams genericclioptions.IOStreams) *c
 				restartkubelet.NewCmdRestartKubelet(f, streams),
 				copytonode.NewCmdCopyToNode(f, streams),
 				rebootmachineconfigpool.NewCmdRebootMachineConfigPool(f, streams),
-				waitfornoderestart.NewCmdWaitForNodeRestart(f, streams),
+				waitfornodereboot.NewCmdWaitForNodeReboot(f, streams),
 			},
 		},
 		{
