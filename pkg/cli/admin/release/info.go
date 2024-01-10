@@ -1166,8 +1166,96 @@ func describeReleaseDiff(out io.Writer, diff *ReleaseDiff, showCommit bool, outp
 			}
 		})
 	}
+
+	printFeatureSetSection(diff, "Default", w)
+	printFeatureSetSection(diff, string(configv1.TechPreviewNoUpgrade), w)
+
 	fmt.Fprintln(w)
 	return nil
+}
+
+func printFeatureSetSection(diff *ReleaseDiff, featureSetName string, w io.Writer) {
+	newFeatures, newlyEnabledFeatures, newlyDisabledFeatures, newlyRemovedFeatures, _ := featureGatesForFeatureSetChanged(diff, featureSetName)
+	fmt.Fprintln(w)
+	fmt.Fprintf(w, "FeatureGates for %q (%d enabled, %d disabled, %d removed)\n",
+		featureSetName, len(newlyEnabledFeatures), len(newlyDisabledFeatures), len(newlyRemovedFeatures))
+	fmt.Fprintf(w, "Enabled:\n")
+	writeTabSection(w, func(w io.Writer) {
+		for _, featureGate := range newFeatures.Status.FeatureGates[0].Enabled {
+			if newlyEnabledFeatures.Has(featureGate.Name) {
+				fmt.Fprintf(w, "*%v\n", featureGate.Name)
+			} else {
+				fmt.Fprintf(w, "%v\n", featureGate.Name)
+			}
+		}
+	})
+	fmt.Fprintf(w, "Disabled:\n")
+	writeTabSection(w, func(w io.Writer) {
+		for _, featureGate := range newFeatures.Status.FeatureGates[0].Disabled {
+			if newlyDisabledFeatures.Has(featureGate.Name) {
+				fmt.Fprintf(w, "*%v\n", featureGate.Name)
+			} else {
+				fmt.Fprintf(w, "%v\n", featureGate.Name)
+			}
+		}
+	})
+	if len(newlyRemovedFeatures) > 0 {
+		fmt.Fprintf(w, "Removed:\n")
+		writeTabSection(w, func(w io.Writer) {
+			for _, feature := range newlyRemovedFeatures {
+				fmt.Fprintf(w, "%v\n", feature)
+			}
+		})
+	}
+}
+
+// featureGatesForFeatureSetChanged returns newly enabled featureGates, newly disabled featureGates, and newly removed featureGates
+func featureGatesForFeatureSetChanged(diff *ReleaseDiff, featureSetName string) (*configv1.FeatureGate, sets.Set[configv1.FeatureGateName], sets.Set[configv1.FeatureGateName], sets.Set[configv1.FeatureGateName], bool) {
+	manifestName := fmt.Sprintf("featureGate-%v.yaml", featureSetName)
+	changed := diff.ChangedManifests[manifestName]
+	if changed == nil || len(changed.To) == 0 {
+		return nil, nil, nil, nil, false
+	}
+	toFeatureGates, err := ReadFeatureGateV1(changed.To)
+	if err != nil {
+		return nil, nil, nil, nil, false
+	}
+
+	toEntireSet := sets.Set[configv1.FeatureGateName]{}
+	toEnabledSet := sets.Set[configv1.FeatureGateName]{}
+	toDisabledSet := sets.Set[configv1.FeatureGateName]{}
+	for _, curr := range toFeatureGates.Status.FeatureGates[0].Enabled {
+		toEntireSet.Insert(curr.Name)
+		toEnabledSet.Insert(curr.Name)
+	}
+	for _, curr := range toFeatureGates.Status.FeatureGates[0].Disabled {
+		toEntireSet.Insert(curr.Name)
+		toDisabledSet.Insert(curr.Name)
+	}
+
+	fromEntireSet := sets.Set[configv1.FeatureGateName]{}
+	fromEnabledSet := sets.Set[configv1.FeatureGateName]{}
+	fromDisabledSet := sets.Set[configv1.FeatureGateName]{}
+	if len(changed.From) > 0 {
+		fromFeatureGates, err := ReadFeatureGateV1(changed.From)
+		if err != nil {
+			return nil, nil, nil, nil, false
+		}
+		for _, curr := range fromFeatureGates.Status.FeatureGates[0].Enabled {
+			fromEntireSet.Insert(curr.Name)
+			fromEnabledSet.Insert(curr.Name)
+		}
+		for _, curr := range fromFeatureGates.Status.FeatureGates[0].Disabled {
+			fromEntireSet.Insert(curr.Name)
+			fromDisabledSet.Insert(curr.Name)
+		}
+	}
+
+	newlyEnabledFeatureGates := toEnabledSet.Difference(fromEnabledSet)
+	newlyDisabledFeatureGates := toDisabledSet.Difference(fromDisabledSet)
+	removedFeatureGates := fromEntireSet.Difference(toEntireSet)
+	haveFeaturesChange := len(newlyEnabledFeatureGates) > 0 || len(newlyDisabledFeatureGates) > 0 || len(removedFeatureGates) > 0
+	return toFeatureGates, newlyEnabledFeatureGates, newlyDisabledFeatureGates, removedFeatureGates, haveFeaturesChange
 }
 
 func repoAndCommit(ref *imageapi.TagReference) string {
